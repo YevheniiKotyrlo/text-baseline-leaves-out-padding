@@ -1,79 +1,32 @@
 # text-baseline-leaves-out-padding
 
-![Build](https://github.com/YevheniiKotyrlo/text-baseline-leaves-out-padding/workflows/Pre%20Merge%20Checks/badge.svg)
+A `Text`'s baseline leaves out its top padding, so `alignItems: 'baseline'` places a padded `Text` as if it had none.
 
-This is your new React Native Reproducer project.
+`ReproducerApp/App.tsx` renders:
 
-# Reproducer TODO list
-
-- [x] 1. Create a new reproducer project.
-- [ ] 2. Git clone your repository locally.
-- [ ] 3. Edit the project to reproduce the failure you're seeing.
-- [ ] 4. Push your changes, so that Github Actions can run the CI.
-- [ ] 5. Make sure the repository is public and share the link with the issue you reported.
-
-# How to use this Reproducer
-
-This project has been created with `npx @react-native-community/cli init` and is a vanilla React Native app.
-
-> [!IMPORTANT]  
-> Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/set-up-your-environment) so that you have a working environment locally.
-
-## Step 1: Start the Metro Server
-
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
-
-To start Metro, run the following command from the _root_ of your React Native project:
-
-```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
+```jsx
+<View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+  <Text style={{ fontSize: 20 }}>A</Text>
+  <Text style={{ fontSize: 20, paddingTop: 30, backgroundColor: '#ffe08a' }}>B</Text>
+</View>
 ```
 
-## Step 2: Start your Application
+Each `Text` logs its `onLayout` y (logcat tag `ReactNativeJS`), and the screen shows both below the row.
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+## Run it
 
-### For Android
+With an Android device on adb (`ANDROID_SERIAL` picks one):
 
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```sh
+./reproduce-android.sh
 ```
 
-### For iOS
+It builds the app in Release, installs and launches it, takes a screenshot (`screenshot.png`), dumps the app's log
+(`logcat.txt`) and runs `./verdict.sh logcat.txt`, which reads the last y each `Text` logged.
 
-First, make sure you install dependencies with:
+Or by hand: `cd ReproducerApp && yarn install && yarn android`, then read the screen.
 
-```bash
-cd ios && bundle install && bundle exec pod install
-```
+- **Expected:** the A and the B sit on one baseline: A's y is 30 and B's is 0; the script exits 0.
+- **Actual:** both `Text`s' tops sit at y 0, so the B sits 30 below the A; the script exits 1.
 
-Then you can run the iOS app with:
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+It exits 2 when a step fails or the log cannot tell.
